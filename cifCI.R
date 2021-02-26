@@ -1,7 +1,3 @@
-
-# cmprsk package only returns point estimate and variance for each time point,
-# this function calculates the 95% CI with an assigned time point.
-
 cifCI <- function(.cuminc, .tp) {
   require(cmprsk)
   .ls <- timepoints(.cuminc, .tp) # a list
