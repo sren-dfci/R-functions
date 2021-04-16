@@ -7,15 +7,20 @@ fstats <- function(.col, .digits = NULL) {
   return(paste0(.tbl_freq, " (", .tbl_perc, "%)"))
 }
 
-nstats <- function(.col, .digits = NULL) {
+nstats <- function(.col, .digits = NULL, .median = TRUE) {
   .digits <- ifelse(is.null(.digits), 0, .digits)
   .q <- round(
     quantile(.col, seq(0, 1, 0.25), na.rm = T),
     digits = .digits
   )
   .m <- round(mean(.col, na.rm = T), digits = .digits)
-  r1 <- paste(.q, collapse = ", ")
-  return(paste0(r1, "; ", .m))
+  if (.median) {
+    # median, range
+    return(paste0(.q[3], " (", .q[1], " - ", .q[5], ")"))
+  } else {
+    # mean, IQR
+    return(paste0(.m, " (", .q[2], " - ", .q[4], ")"))
+  }
 }
 
 missStats <- function(.col, .digits = NULL) {
@@ -66,14 +71,14 @@ summaryTable <- function(.df, .vars, .strata_var = NULL, .digits = NULL) {
     if (is.numeric(.col)) {
       # if any missing
       if (anyNA(.col)) {
-        vlevels <- c("quantile; mean", "missing")
+        vlevels <- c("median (range)", "mean (IQR)", "missing")
       } else {
-        vlevels <- "quantile; mean"
+        vlevels <- c("median (range)", "mean (IQR)")
       }
-    # character to factor
+      # character to factor
     } else if (is.character(.col)) {
       .col <- factor(.col, levels = sort(unique(.col[!is.na(.col)])))
-    # logical to factor
+      # logical to factor
     } else if (is.logical(.col)) {
       .col <- factor(.col, levels = c(TRUE, FALSE))
     }
@@ -90,14 +95,18 @@ summaryTable <- function(.df, .vars, .strata_var = NULL, .digits = NULL) {
     if (!is.null(.strata_var)) {
       for (s in sort(unique(.df[[.strata_var]]))) {
         .sub_col <- .col[.df[[.strata_var]] == s]
-        if ("quantile; mean" %in% vlevels) {
+        if ("median (range)" %in% vlevels) {
           if ("missing" %in% vlevels) {
             .outcome <- c(
-              nstats(.sub_col, .digits),
+              nstats(.sub_col, .digits, TRUE),
+              nstats(.sub_col, .digits, FALSE),
               missStats(.sub_col, .digits)
             )
           } else {
-            .outcome <- nstats(.sub_col, .digits)
+            .outcome <- c(
+              nstats(.sub_col, .digits, TRUE),
+              nstats(.sub_col, .digits, FALSE)
+            )
           }
         } else {
           .outcome <- fstats(.sub_col, .digits)
@@ -105,14 +114,18 @@ summaryTable <- function(.df, .vars, .strata_var = NULL, .digits = NULL) {
         .outcomes[[v]][[s]] <- .outcome
       }
     } else {
-      if ("quantile; mean" %in% vlevels) {
+      if ("median (range)" %in% vlevels) {
         if ("missing" %in% vlevels) {
           .outcome <- c(
-            nstats(.col, .digits),
+            nstats(.col, .digits, TRUE),
+            nstats(.col, .digits, FALSE),
             missStats(.col, .digits)
           )
         } else {
-          .outcome <- nstats(.col, .digits)
+          .outcome <- c(
+            nstats(.col, .digits, TRUE),
+            nstats(.col, .digits, FALSE)
+          )
         }
       } else {
         .outcome <- fstats(.col, .digits)
