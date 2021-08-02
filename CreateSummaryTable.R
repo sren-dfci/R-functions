@@ -40,6 +40,17 @@ summaryTable <- function(.df, .vars, .strata_var = NULL, .digits = NULL) {
   if (length(.strata_var) > 1) {
     stop("only support one strata variable")
   }
+  if (!is.null(.strata_var)) {
+    if (!.strata_var %in% names(.df)) {
+      stop("strata var not found")
+    }
+  }
+  if (!missing(.vars)) {
+    miss_vars <- .vars[!.vars %in% names(.df)]
+    if (length(miss_vars) > 0) {
+      stop(paste(paste(miss_vars, collapse = ", "), "not found"))
+    }
+  }
   # if .vars not specified, use all columns
   if (missing(.vars)) {
     .vars <- colnames(.df)
@@ -47,6 +58,7 @@ summaryTable <- function(.df, .vars, .strata_var = NULL, .digits = NULL) {
       .vars <- .vars[.vars != .strata_var]
     }
   }
+  .df[[.strata_var]] <- as.character(.df[[.strata_var]])
   # .add_na <- match.arg(.add_na)
   # extract all levels from all vars
   .levels <- vector("list", length(.vars) + 1)
