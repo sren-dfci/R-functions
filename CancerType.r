@@ -16,9 +16,9 @@ her2_status <- function(fish, ihc) {
   # convert factor to character if possible
   fish <- as.character(fish)
   ihc <- as.character(ihc)
-  # vector cleaning
-  fish <- status_clean(fish)
-  ihc <- status_clean(ihc)
+  # # vector cleaning
+  # fish <- status_clean(fish)
+  # ihc <- status_clean(ihc)
   # check options
   s <- c("Negative", "Equivocal", "Positive", "Not Done", "Unknown")
   if (sum(!fish %in% s)) {
@@ -41,6 +41,10 @@ her2_status <- function(fish, ihc) {
       )
     )
   )
+  tmp <- data.frame(fish = fish, ihc = ihc, her2 = her2)
+  tmp <- unique(tmp)
+  tmp <- tmp[order(tmp$her2, tmp$fish, tmp$ihc), ]
+  print(tmp)
   return(her2)
 }
 
@@ -53,9 +57,9 @@ hr_status <- function(er, pr) {
   # convert factor to characater if needed
   er <- as.character(er)
   pr <- as.character(pr)
-  # vector cleaning
-  er <- status_clean(er)
-  pr <- status_clean(pr)
+  # # vector cleaning
+  # er <- status_clean(er)
+  # pr <- status_clean(pr)
   # check options
   s <- c("Negative", "Low Positive", "Positive", "Not Done", "Unknown")
   if (sum(!er %in% s)) {
