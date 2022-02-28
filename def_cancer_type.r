@@ -4,7 +4,7 @@ status_clean <- function(v) {
   vs[grepl("Positive", vs, ignore.case = TRUE)] <- "Positive"
   vs[grepl("Equivocal", vs, ignore.case = TRUE)] <- "Equivocal"
   print(table(v, vs, useNA = "ifany"))
-  return(vs)
+  vs
 }
 
 
@@ -45,7 +45,7 @@ her2_status <- function(fish, ihc) {
   tmp <- unique(tmp)
   tmp <- tmp[order(tmp$her2, tmp$fish, tmp$ihc), ]
   print(tmp)
-  return(her2)
+  her2
 }
 
 
@@ -61,7 +61,7 @@ hr_status <- function(er, pr) {
   # er <- status_clean(er)
   # pr <- status_clean(pr)
   # check options
-  s <- c("Negative", "Low Positive", "Positive", "Not Done", "Unknown")
+  s <- c("Negative", "Positive", "Not Done", "Unknown")
   if (sum(!er %in% s)) {
     stop("er has some values unrecognized")
   }
@@ -73,12 +73,16 @@ hr_status <- function(er, pr) {
     er == "Negative" & pr == "Negative",
     "Negative",
     ifelse(
-      er == "Positive" & pr == "Positive",
+      er == "Positive" | pr == "Positive",
       "Positive",
       "Not Done/Unknown"
     )
   )
-  return(hr)
+  tmp <- data.frame(er = er, pr = pr, hr = hr)
+  tmp <- unique(tmp)
+  tmp <- tmp[order(tmp$hr, tmp$er, tmp$pr), ]
+  print(tmp)
+  hr
 }
 
 
@@ -101,17 +105,25 @@ cancer_type <- function(her2, hr) {
     stop("hr has some values unrecognized")
   }
   cancer_type <- ifelse(
-    her2 %in% c("Positive", "Positive; Query") & hr == "Negative",
-    "her2",
+    her2 %in% c("Positive", "Positive; Query") & hr == "Positive",
+    "HER2+/HR+",
     ifelse(
-      her2 == "Negative" & hr == "Positive",
-      "hr",
+      her2 %in% c("Positive", "Positive; Query") & hr == "Negative",
+      "HER2+/HR-",
       ifelse(
-        her2 == "Negative" & hr == "Negative",
-        "tnbc",
-        "query"
+        her2 == "Negative" & hr == "Positive",
+        "HER2-/HR+",
+        ifelse(
+          her2 == "Negative" & hr == "Negative",
+          "TNBC",
+          "Query"
+        )
       )
     )
   )
-  return(cancer_type)
+  tmp <- data.frame(her2 = her2, hr = hr, type = cancer_type)
+  tmp <- unique(tmp)
+  tmp <- tmp[order(tmp$her2, tmp$hr, tmp$type), ]
+  print(tmp)
+  cancer_type
 }
