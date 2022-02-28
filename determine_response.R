@@ -82,38 +82,46 @@ tg_de_summ <- function(df, case, cycle, lesion, lesion_len) {
   )
   output$perc_diff_min <- ifelse(
     output$min_len == 0,
-    100,
+    -100,
     round(output$abs_diff_min / output$min_len * 100, 1)
   )
   output$resp_no_abs <- ifelse(
     output$sum_lens == 0,
     "CR",
     ifelse(
-      output$perc_diff_base < -30,
-      "PR",
-      ifelse(
-        output$n_lesion_diff > 0 |
+      output$n_lesion_diff > 0 |
           output$new_lesion == 1 |
           output$perc_diff_min > 20,
-        "PD",
+      "PD",
+      ifelse(
+        output$perc_diff_base < -30,
+        "PR",
         "SD"
       )
     )
   )
   output$resp_abs_cm <- ifelse(
-    output$n_lesion_diff <= 0 &
-      output$new_lesion == 0 &
-      output$perc_diff_min > 20 &
-      output$abs_diff_min < 0.5,
-    "SD",
+    output$resp_no_abs == "PD" & 
+      output$n_lesion_diff <= 0 &
+        output$new_lesion == 0 &
+        output$abs_diff_min < 0.5,
+    ifelse(
+      output$perc_diff_base < -30,
+      "PR",
+      "SD"
+    ),
     output$resp_no_abs
   )
   output$resp_abs_mm <- ifelse(
-    output$n_lesion_diff <= 0 &
+    output$resp_no_abs == "PD" & 
+      output$n_lesion_diff <= 0 &
       output$new_lesion == 0 &
-      output$perc_diff_min > 20 &
       output$abs_diff_min < 5,
-    "SD",
+    ifelse(
+      output$perc_diff_base < -30,
+      "PR",
+      "SD"
+    ),
     output$resp_no_abs
   )
   output
