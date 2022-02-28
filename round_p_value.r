@@ -1,5 +1,5 @@
 round_p_value <- function(p) {
-  ifelse(
+  rounded_p <- ifelse(
     p < .001,
     rep("<0.001", length(p)),
     ifelse(
@@ -8,4 +8,5 @@ round_p_value <- function(p) {
       round(p, 2)
     )
   )
+  rounded_p
 }
